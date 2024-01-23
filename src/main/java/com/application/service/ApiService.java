@@ -1,17 +1,17 @@
 package com.application.service;
 
-import com.application.model.ApiResponse;
+import com.application.model.FoodItem;
+import com.application.model.Nutriscore;
 import com.google.gson.Gson;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class ApiService {
-    private static final String API_URL = "https://world.openfoodfacts.org/api/v0/product/";
+    private static final String API_URL = "https://world.openfoodfacts.org/api/v0/product/%s?fields=product_name,allergens,code,image_url,nova_group,nutriscore_data,nutriments";
 
     private final HttpClient httpClient;
     private final String barcode;
@@ -21,27 +21,25 @@ public class ApiService {
         this.barcode = barcode;
     }
 
-    private JSONObject fetchData() {
+    private JSONObject fetchDataRaw() {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL + this.barcode))
+                .uri(URI.create(String.format(API_URL,this.barcode)))
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .thenApply(ApiService::parseJson).join();
     }
 
+    public FoodItem getFoodItem() {
+        Gson gson = new Gson();
+        JSONObject dataRaw = fetchDataRaw();
+        JSONObject productJson = dataRaw.getJSONObject("product");
+        return gson.fromJson(productJson.toString(), FoodItem.class);
+    }
+
     private static JSONObject parseJson(String responseBody) {
         return new JSONObject(responseBody);
     }
 
-    public static void main(String[] args) {
-        try {
-            ApiService apiService = new ApiService("3017624010701");
-            System.out.println(apiService.fetchData().get("code"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 
 }
