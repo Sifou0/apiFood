@@ -6,12 +6,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FoodItem {
-    private String product_name;
+    private String productName;
     private String allergens;
     private String code;
-    private String image_url;
-    private int nova_group;
-    private Nutriscore nutriscore;
+    private String imageUrl;
+    private int novaGroup;
+    private Nutriscore nutriscoreData;
     private Nutriments nutriments;
 
 }
